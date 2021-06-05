@@ -33,7 +33,7 @@ def register_handle(request):
     encrypted_pwd = s1.hexdigest()
 
     # 创建对象
-    UserInfo.objects.create(uname=username, upwd=encrypted_pwd, uemail=email)
+    UserInfo.objects.create(uname=username, upwd=encrypted_pwd, uemail=email, umoney=0.)
     # 注册成功
     context = {
         'title': '用户登陆',
@@ -124,6 +124,7 @@ def info(request):  # 用户中心
         'user_name': username,
         'goods_list': goods_list,
         'explain': explain,
+        'user_money': user.umoney,
     }
     return render(request, 'df_user/user_center_info.html', context)
 

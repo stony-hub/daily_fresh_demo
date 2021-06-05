@@ -54,7 +54,9 @@ def order(request):
 def order_handle(request):
     tran_id = transaction.savepoint()  # 保存事务发生点
     cart_ids = request.POST.get('cart_ids')  # 用户提交的订单购物车，此时cart_ids为字符串，例如'1,2,3,'
+    total_price = request.POST.get('total')
     user_id = request.session['user_id']  # 获取当前用户的id
+    user = UserInfo.objects.get(id=user_id)
     data = {}
     try:
         order_info = OrderInfo()  # 创建一个订单对象
@@ -64,6 +66,11 @@ def order_handle(request):
         order_info.user_id = int(user_id)  # 订单的用户id
         order_info.ototal = Decimal(request.POST.get('total'))  # 从前端获取的订单总价
         order_info.save()  # 保存订单
+        
+        if float(total_price) > float(user.umoney):
+            transaction.savepoint_rollback(tran_id)
+            data['ok'] = 2
+            return JsonResponse(data)
 
         for cart_id in cart_ids.split(','):  # 逐个对用户提交订单中的每类商品即每一个小购物车
             cart = CartInfo.objects.get(pk=cart_id)  # 从CartInfo表中获取小购物车对象
@@ -82,6 +89,8 @@ def order_handle(request):
                 transaction.savepoint_rollback(tran_id)
                 return HttpResponse('库存不足')
         data['ok'] = 1
+        user.umoney -= total_price
+        user.save()
         transaction.savepoint_commit(tran_id)
     except Exception as e:
         print("%s" % e)

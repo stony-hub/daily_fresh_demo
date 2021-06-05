@@ -120,9 +120,12 @@
 
 		    //先发请求
             $.post('/order/push/',data,function (data) {
+				alert(data.ok)
                 //成功
-
                 if (data.ok == 1){
+                    
+                    alert('im here!')
+                    
                     localStorage.setItem('order_finish',2);
 
                     $('.popup_con').fadeIn('fast', function() {
@@ -134,6 +137,9 @@
                         },1000)
                     });
                 }
+				else if (data.ok == 2) {
+					alert('余额不足 ' + data.name)
+				}
                 else {
                     alert('订单提交失败')
                 }
